@@ -81,7 +81,7 @@ def safe_sendall(data):
     try:
         sock.sendall(data)
     except (BrokenPipeError, OSError) as e:
-        print(f"❌ Error during sendall: {e}")
+        print(f"Error during sendall: {e}")
         sock.close()
         raise
 
@@ -91,7 +91,7 @@ def send_tensor(tensor):
         data = tensor.numpy().astype(np.float32).tobytes()
         safe_sendall(struct.pack('!I', len(data)) + data)
     except Exception as e:
-        print(f"❌ Failed to send tensor: {e}")
+        print(f"Failed to send tensor: {e}")
         raise
 
 def send_label_tensor(labels):
@@ -100,7 +100,7 @@ def send_label_tensor(labels):
         data = labels.numpy().astype(np.int64).tobytes()
         safe_sendall(struct.pack('!I', len(data)) + data)
     except Exception as e:
-        print(f"❌ Failed to send label tensor: {e}")
+        print(f"Failed to send label tensor: {e}")
         raise
 
 def recv_float():
@@ -173,7 +173,7 @@ def evaluate_model(loader):
             preds.extend(pred_batch)
             labels_all.extend(labels.cpu().tolist())
         except Exception as e:
-            print(f"❌ Error during inference: {e}")
+            print(f"Error during inference: {e}")
             break
 
     return metric.compute(predictions=preds, references=labels_all)
@@ -183,10 +183,10 @@ def check_param_update_effectiveness(params, w_before, step_id=""):
     delta = w_after - w_before
     num_changed = (delta.abs() > 1e-6).sum().item()
     total_params = delta.numel()
-    print(f"\n🔍 Param Update Check {step_id}")
-    print(f"Δ mean: {delta.mean().item():.6e} | Δ std: {delta.std().item():.6e} | |Δ|max: {delta.abs().max().item():.6e}")
-    print(f"Δ changed: {num_changed}/{total_params} ({(100 * num_changed / total_params):.2f}%)")
-    print(f"Δ preview: {delta[:5]}")
+    print(f"\nParam Update Check {step_id}")
+    print(f"mean: {delta.mean().item():.6e} | std: {delta.std().item():.6e} | max: {delta.abs().max().item():.6e}")
+    print(f"Changed: {num_changed}/{total_params} ({(100 * num_changed / total_params):.2f}%)")
+    print(f"Preview: {delta[:5]}")
 
 # Training
 print("Training ZO-SGD")
@@ -228,11 +228,11 @@ try:
                     grad += L * u
                     losses.append(abs(L))
                 except Exception as e:
-                    print(f"❌ Error during ZO communication: {e}")
+                    print(f"Error during ZO communication: {e}")
                     break
 
             if len(losses) == 0:
-                print("⚠️ Skipping step due to communication failure.")
+                print("Skipping step due to communication failure.")
                 continue
 
             grad /= P
@@ -263,10 +263,10 @@ try:
             })
 
 except Exception as e:
-    print(f"❌ Training aborted: {e}")
+    print(f"Training aborted: {e}")
 finally:
     sock.close()
-    print("🔒 Socket closed")
+    print("Socket closed")
 
 # Save Model
 model.save_pretrained(os.path.join(run_dir, "opt-sst2-zo-finetuned"))
